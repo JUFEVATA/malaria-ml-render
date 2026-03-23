@@ -1,10 +1,15 @@
 import io
 import os
+
 import requests
 import streamlit as st
 from PIL import Image
 
 API_BASE_URL = os.getenv("API_BASE_URL", "").strip()
+
+if API_BASE_URL and not API_BASE_URL.startswith("http"):
+    API_BASE_URL = f"https://{API_BASE_URL}"
+
 API_URL = f"{API_BASE_URL}/predict" if API_BASE_URL else ""
 
 st.set_page_config(
@@ -29,7 +34,7 @@ st.info("Flujo del sistema: Imagen → Streamlit → FastAPI → Modelo LeNet �
 if not API_BASE_URL:
     st.error(
         "La variable de entorno API_BASE_URL no está configurada. "
-        "En Render debe apuntar a la URL base de tu API."
+        "En Render debe apuntar al servicio malaria-api."
     )
     st.stop()
 

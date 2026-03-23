@@ -17,4 +17,4 @@ services:
         fromService:
           type: web
           name: malaria-api
-          property: url
+          property: host
