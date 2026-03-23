@@ -1,12 +1,12 @@
-import os
 import io
+import os
 import requests
 import streamlit as st
 from PIL import Image
 
-import os
+API_BASE_URL = os.getenv("API_BASE_URL", "").strip()
+API_URL = f"{API_BASE_URL}/predict" if API_BASE_URL else ""
 
-API_URL = os.getenv("API_URL", "http://localhost:10000/predict")
 st.set_page_config(
     page_title="Clasificador de Malaria",
     page_icon="🦠",
@@ -26,6 +26,13 @@ st.markdown(
 
 st.info("Flujo del sistema: Imagen → Streamlit → FastAPI → Modelo LeNet → Predicción")
 
+if not API_BASE_URL:
+    st.error(
+        "La variable de entorno API_BASE_URL no está configurada. "
+        "En Render debe apuntar a la URL base de tu API."
+    )
+    st.stop()
+
 uploaded = st.file_uploader(
     "Sube una imagen de célula (JPG o PNG)",
     type=["jpg", "jpeg", "png"]
@@ -37,7 +44,7 @@ if uploaded is not None:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.image(img, caption="Imagen cargada", use_column_width=True)
+        st.image(img, caption="Imagen cargada", use_container_width=True)
 
     with col2:
         st.markdown("### Información de la imagen")
@@ -56,7 +63,7 @@ if uploaded is not None:
                     "file": ("imagen.png", buffer, "image/png")
                 }
 
-                response = requests.post(API_URL, files=files, timeout=30)
+                response = requests.post(API_URL, files=files, timeout=60)
 
             if response.status_code == 200:
                 result = response.json()
@@ -69,6 +76,7 @@ if uploaded is not None:
                     score = result.get("score", 0.0)
                     input_shape_model = result.get("input_shape_model", "No disponible")
                     prediction_shape = result.get("prediction_shape", "No disponible")
+                    filename = result.get("filename", "No disponible")
 
                     st.markdown("## Resultado de la predicción")
 
@@ -80,6 +88,7 @@ if uploaded is not None:
                     st.metric("Confianza del modelo", f"{score:.2f}%")
 
                     st.markdown("### Detalles técnicos")
+                    st.write(f"**Archivo enviado:** {filename}")
                     st.write(f"**Input esperado por el modelo:** {input_shape_model}")
                     st.write(f"**Forma de la salida del modelo:** {prediction_shape}")
 
@@ -92,7 +101,7 @@ if uploaded is not None:
 
         except requests.exceptions.ConnectionError:
             st.error(
-                f"No fue posible conectar con la API. Verifica que FastAPI esté corriendo en {API_URL}"
+                f"No fue posible conectar con la API. Verifica que API_BASE_URL sea correcta: {API_BASE_URL}"
             )
         except requests.exceptions.Timeout:
             st.error("La API tardó demasiado en responder.")

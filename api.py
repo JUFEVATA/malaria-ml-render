@@ -10,10 +10,6 @@ from PIL import Image
 from tensorflow.keras.models import load_model
 
 
-# =========================================================
-# Configuración general
-# =========================================================
-
 APP_TITLE = "Malaria Prediction API"
 MODEL_NAME = "lenet.keras"
 
@@ -30,11 +26,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# =========================================================
-# Estado global de la aplicación
-# =========================================================
-
 model = None
 INPUT_SHAPE = None
 IMG_HEIGHT = 224
@@ -50,12 +41,7 @@ metrics_data = {
 }
 
 
-# =========================================================
-# Utilidades del modelo
-# =========================================================
-
 def load_trained_model() -> None:
-    """Carga el modelo entrenado y define el tamaño de entrada esperado."""
     global model, INPUT_SHAPE, IMG_HEIGHT, IMG_WIDTH
 
     if not MODEL_PATH.exists():
@@ -77,7 +63,6 @@ def load_trained_model() -> None:
 
 
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
-    """Convierte la imagen a RGB, ajusta tamaño y normaliza."""
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = image.resize((IMG_WIDTH, IMG_HEIGHT))
@@ -89,7 +74,6 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
 
 
 def validate_uploaded_file(file: UploadFile) -> None:
-    """Valida que el archivo recibido sea una imagen."""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=400,
@@ -98,12 +82,6 @@ def validate_uploaded_file(file: UploadFile) -> None:
 
 
 def interpret_prediction(pred: np.ndarray) -> tuple[str, float]:
-    """
-    Interpreta la salida del modelo.
-    Soporta:
-    - salida binaria shape (1, 1)
-    - salida multiclase shape (1, 2)
-    """
     if len(pred.shape) == 2 and pred.shape[1] == 1:
         prob = float(pred[0][0])
 
@@ -117,13 +95,10 @@ def interpret_prediction(pred: np.ndarray) -> tuple[str, float]:
         score = float(pred[0][class_idx])
         return labels[class_idx], score
 
-    raise ValueError(
-        f"Salida del modelo no esperada. prediction_shape={pred.shape}"
-    )
+    raise ValueError(f"Salida del modelo no esperada. prediction_shape={pred.shape}")
 
 
 def update_metrics(label: str, score_percent: float) -> None:
-    """Actualiza métricas básicas en memoria."""
     metrics_data["total_predictions"] += 1
     metrics_data["scores"].append(score_percent)
 
@@ -140,24 +115,15 @@ def update_metrics(label: str, score_percent: float) -> None:
 
 
 def get_average_score() -> float:
-    """Calcula el promedio de scores almacenados."""
     if not metrics_data["scores"]:
         return 0.0
     return round(sum(metrics_data["scores"]) / len(metrics_data["scores"]), 2)
 
 
-# =========================================================
-# Eventos
-# =========================================================
-
 @app.on_event("startup")
 def startup_event() -> None:
     load_trained_model()
 
-
-# =========================================================
-# Endpoints informativos
-# =========================================================
 
 @app.get("/")
 def home():
@@ -195,10 +161,6 @@ def last_prediction():
         return {"message": "Aún no se ha realizado ninguna predicción"}
     return metrics_data["last_prediction"]
 
-
-# =========================================================
-# Endpoint principal de predicción
-# =========================================================
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):

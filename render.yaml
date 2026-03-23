@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: malaria-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    plan: free
+    autoDeploy: true
+
+  - type: web
+    name: malaria-streamlit
+    runtime: docker
+    dockerfilePath: ./Dockerfile.streamlit
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: malaria-api
+          property: url
