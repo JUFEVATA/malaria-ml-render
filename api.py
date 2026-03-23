@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 from tensorflow.keras.models import load_model
 
-
 APP_TITLE = "Malaria Prediction API"
 MODEL_NAME = "lenet.keras"
 

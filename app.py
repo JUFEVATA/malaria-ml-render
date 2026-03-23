@@ -49,7 +49,8 @@ if uploaded is not None:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.image(img, caption="Imagen cargada", use_container_width=True)
+        # ✅ CORRECCIÓN AQUÍ
+        st.image(img, caption="Imagen cargada", use_column_width=True)
 
     with col2:
         st.markdown("### Información de la imagen")
