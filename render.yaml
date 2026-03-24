@@ -14,7 +14,4 @@ services:
     autoDeploy: true
     envVars:
       - key: API_BASE_URL
-        fromService:
-          type: web
-          name: malaria-api
-          property: hostport
+        value: https://malaria-api-vuzw.onrender.com
