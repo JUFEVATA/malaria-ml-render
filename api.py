@@ -84,15 +84,18 @@ def interpret_prediction(pred: np.ndarray) -> tuple[str, float]:
     if len(pred.shape) == 2 and pred.shape[1] == 1:
         prob = float(pred[0][0])
 
-        if prob >= 0.5:
-            return "Parasitized", prob
-        return "Uninfected", 1 - prob
+        # En este modelo:
+        # 0 -> Parasitized
+        # 1 -> Uninfected
+        if prob < 0.5:
+            return "Parasitized", round((1 - prob), 4)
+        return "Uninfected", round(prob, 4)
 
     if len(pred.shape) == 2 and pred.shape[1] == 2:
         class_idx = int(np.argmax(pred[0]))
-        labels = ["Uninfected", "Parasitized"]
+        labels = ["Parasitized", "Uninfected"]
         score = float(pred[0][class_idx])
-        return labels[class_idx], score
+        return labels[class_idx], round(score, 4)
 
     raise ValueError(f"Salida del modelo no esperada. prediction_shape={pred.shape}")
 
