@@ -8,7 +8,7 @@ from PIL import Image
 API_BASE_URL = os.getenv("API_BASE_URL", "").strip()
 
 if API_BASE_URL and not API_BASE_URL.startswith("http"):
-    API_BASE_URL = f"https://{API_BASE_URL}"
+    API_BASE_URL = f"http://{API_BASE_URL}"
 
 API_URL = f"{API_BASE_URL}/predict" if API_BASE_URL else ""
 
@@ -49,7 +49,6 @@ if uploaded is not None:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        # ✅ CORRECCIÓN AQUÍ
         st.image(img, caption="Imagen cargada", use_column_width=True)
 
     with col2:
